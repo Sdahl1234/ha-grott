@@ -1,0 +1,12 @@
+{
+  "domain": "grott",
+  "name": "Grott",
+  "documentation": "https://github.com/sdahl1234/ha-grott",
+  "issue_tracker": "https://github.com/sdahl1234/ha-grott/issues",
+  "requirements": ["requests", "paho-mqtt"],
+  "codeowners": ["@sdahl1234"],
+  "integration_type": "device",
+  "iot_class": "local_push",
+  "config_flow": true,
+  "version": "1.0.2"
+}
