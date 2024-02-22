@@ -16,6 +16,7 @@ class grott:
     def __init__(self, useername, password, ip) -> None:
         """Init function."""
 
+        self._dataupdated = None
         self.inverter_serial: str = None
         self.datalogger_serial: str = None
         self.ip = ip
@@ -26,8 +27,8 @@ class grott:
         self.mqtt_client = None
         self.inverter_timer: Timer = None
         self.datalogger_timer: Timer = None
-        self.datalogger_update_interval: int = 300
-        self.inverter_update_interval: int = 60
+        self.datalogger_update_interval: int = 600
+        self.inverter_update_interval: int = 600
         self.data_logger_update_interval = None
         self.inverter_mode = None
         self.discharge_stop = None
@@ -37,7 +38,7 @@ class grott:
         self.inverter_value: float = None
 
     def set_inverter(self, register: int, value: str, inverter: str) -> str:
-        """Get data_logger data."""
+        """Set inverter data."""
         try:
             url = f"http://192.168.86.57:5782/inverter?command=register&register={register}&inverter={inverter}&value={value}"
             _LOGGER.debug(url)
@@ -50,7 +51,7 @@ class grott:
             return False
 
     def set_datalogger(self, register: int, value: str, datalogger: str) -> str:
-        """Get data_logger data."""
+        """Set data_logger data."""
         try:
             url = f"http://192.168.86.57:5782/datalogger?command=register&register={register}&datalogger={datalogger}&value={value}"
             _LOGGER.debug(url)
@@ -70,6 +71,8 @@ class grott:
             response = requests.get(url)
             if response.status_code == 200:
                 response_data = response.json()
+                if self._dataupdated is not None:
+                    self._dataupdated()
                 return response_data.get("value")
             return None
         except Exception as error:  # pylint: disable=broad-except
@@ -84,6 +87,8 @@ class grott:
             response = requests.get(url)
             if response.status_code == 200:
                 response_data = response.json()
+                if self._dataupdated is not None:
+                    self._dataupdated()
                 return response_data.get("value")
             return None
         except Exception as error:  # pylint: disable=broad-except
@@ -126,13 +131,9 @@ class grott:
             return
 
         self.connect_mqtt()
-        self.datalogger_timer = Timer(
-            self.datalogger_update_interval, self.GetDataloggerValues
-        )
+        self.datalogger_timer = Timer(5, self.GetDataloggerValues)
         self.datalogger_timer.start()
-        self.inverter_timer = Timer(
-            self.inverter_update_interval, self.GetInverterValues
-        )
+        self.inverter_timer = Timer(10, self.GetInverterValues)
         self.inverter_timer.start()
 
     def connect_mqtt(self):
@@ -175,6 +176,8 @@ class grott:
         _LOGGER.debug("MQTT message: " + message.topic + " " + message.payload.decode())  # noqa: G003
         try:
             self.mqttdata = message.payload.decode()
+            if self._dataupdated is not None:
+                self._dataupdated()
 
         except Exception as error:  # pylint: disable=broad-except
             _LOGGER.debug("MQTT message error: " + str(error))  # noqa: G003
