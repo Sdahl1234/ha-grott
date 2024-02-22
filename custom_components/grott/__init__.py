@@ -1,6 +1,5 @@
 """Grott integration."""
 import asyncio
-from datetime import timedelta
 import json
 import logging
 import time
@@ -95,10 +94,17 @@ class GrottDataCoordinator(DataUpdateCoordinator):  # noqa: D101
             # Name of the data. For logging purposes.
             name=DOMAIN,
             # Polling interval. Will only be polled if there are subscribers.
-            update_interval=timedelta(seconds=5),
+            # update_interval=timedelta(seconds=5),
         )
+        self.always_update = True
         self.data_handler = data_handler
         self._devicesn = devicesn
+        self.data_handler._dataupdated = self.dataupdated
+
+    def dataupdated(self):
+        """Func Callback when data is updated."""
+        _LOGGER.debug("callback - grott data updated")
+        self.hass.add_job(self.async_set_updated_data, None)
 
     @property
     def dsn(self):
