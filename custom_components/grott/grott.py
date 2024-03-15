@@ -42,7 +42,7 @@ class grott:
         try:
             url = f"http://192.168.86.57:5782/inverter?command=register&register={register}&inverter={inverter}&value={value}"
             _LOGGER.debug(url)
-            response = requests.put(url)
+            response = requests.put(url, timeout=60)
             if response.status_code == 200:
                 return True
             return False
@@ -55,7 +55,7 @@ class grott:
         try:
             url = f"http://192.168.86.57:5782/datalogger?command=register&register={register}&datalogger={datalogger}&value={value}"
             _LOGGER.debug(url)
-            response = requests.put(url)
+            response = requests.put(url, timeout=60)
             if response.status_code == 200:
                 return True
             return False
@@ -68,7 +68,7 @@ class grott:
         try:
             url = f"http://192.168.86.57:5782/inverter?command=register&register={register}&inverter={inverter}"
             _LOGGER.debug(url)
-            response = requests.get(url)
+            response = requests.get(url, timeout=60)
             if response.status_code == 200:
                 response_data = response.json()
                 if self._dataupdated is not None:
@@ -84,7 +84,7 @@ class grott:
         try:
             url = f"http://192.168.86.57:5782/datalogger?command=register&register={register}&datalogger={datalogger}"
             _LOGGER.debug(url)
-            response = requests.get(url)
+            response = requests.get(url, timeout=60)
             if response.status_code == 200:
                 response_data = response.json()
                 if self._dataupdated is not None:
@@ -156,7 +156,7 @@ class grott:
             _LOGGER.debug("MQTT starting loop")
             self.mqtt_client.loop_start()
         except Exception as error:  # pylint: disable=broad-except
-            _LOGGER.debug("MQTT connect error: " + str(error))  # noqa: G003
+            _LOGGER.warning("MQTT connect error: " + str(error))  # noqa: G003
 
     def on_mqtt_disconnect(self, client, userdata, rc):
         """On mqtt disconnect."""

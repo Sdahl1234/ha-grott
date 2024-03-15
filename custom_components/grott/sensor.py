@@ -845,64 +845,63 @@ class GrottSensor(GrottEntity, SensorEntity):
                 val = "Normal"
             elif val2 == 2:
                 val = "Fault"
-            elif val2 == 3:
-                val = "Normal"
-            elif val2 == 4:
-                val = "Normal"
-            elif val2 == 5:
+            elif val2 in (3, 4, 5):
                 val = "Normal"
             elif val2 == 6:
                 val = "Waiting"
             else:
                 val = "Unknown"
-        elif self._valuepair == "pv1watt":
-            val = round(data.get("values").get(self._valuepair) / 10000, 4)
-        elif self._valuepair == "pv1voltage":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
-        elif self._valuepair == "pv1current":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
-        elif self._valuepair == "pv2watt":
-            val = round(data.get("values").get(self._valuepair) / 10000, 4)
-        elif self._valuepair == "pv2voltage":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
-        elif self._valuepair == "pv2current":
+        elif self._valuepair in (
+            "pv1voltage",
+            "pv1current",
+            "pv2voltage",
+            "pv2current",
+            "pvgridvoltage",
+            "pvgridcurrent",
+            "eactoday",
+            "pvenergytoday",
+            "epv1today",
+            "epv2today",
+            "eactotal",
+            "epvtotal",
+            "pvtemperature",
+            "pvipmtemperature",
+            "eacharge_today",
+            "eacharge_total",
+            "eharge1_tod",
+            "eharge1_tot" "edischarge1_tod",
+            "edischarge1_tot",
+            "elocalload_tod",
+            "elocalload_tot",
+            "etouser_tod",
+            "etouser_tot",
+            "etogrid_tod",
+            "etogrid_tot",
+        ):
             val = round(data.get("values").get(self._valuepair) / 10, 4)
         elif self.key == "growatt_string1_2_watt":
             val = round(data.get("values").get("pv1watt") / 10000, 4) + round(
                 data.get("values").get("pv1watt") / 10000, 4
             )
-        elif self._valuepair == "pvpowerin":
+        elif self._valuepair in (
+            "pv1watt",
+            "pv2watt",
+            "pvpowerin",
+            "pvpowerout",
+            "pvgridpower",
+            "p1charge1",
+            "pdischarge1",
+            "plocaloadr",
+            "pactouserr",
+            "pactogridr",
+        ):
             val = round(data.get("values").get(self._valuepair) / 10000, 4)
-        elif self._valuepair == "pvpowerout":
-            val = round(data.get("values").get(self._valuepair) / 10000, 4)
-        elif self._valuepair == "pvfrequentie":
+        elif self._valuepair in ("pvfrequentie"):
             val = round(data.get("values").get(self._valuepair) / 100, 4)
-        elif self._valuepair == "pvgridvoltage":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
-        elif self._valuepair == "pvgridcurrent":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
-        elif self._valuepair == "pvgridpower":
-            val = round(data.get("values").get(self._valuepair) / 10000, 4)
-        elif self._valuepair == "eactoday":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
-        elif self._valuepair == "pvenergytoday":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
-        elif self._valuepair == "epv1today":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
-        elif self._valuepair == "epv2today":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
         elif self.key == "growatt_generated_solar_energy_epv1_2_today":
             val = round(data.get("values").get("epv1today") / 10, 4) + round(
                 data.get("values").get("epv2today") / 10, 4
             )
-        elif self._valuepair == "eactotal":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
-        elif self._valuepair == "epvtotal":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
-        elif self._valuepair == "pvtemperature":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
-        elif self._valuepair == "pvipmtemperature":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
         elif self._valuepair == "uwsysworkmode":
             val2 = data.get("values").get(self._valuepair)
             if val2 == 0:
@@ -927,42 +926,8 @@ class GrottSensor(GrottEntity, SensorEntity):
                 val = "Unknown"
         elif self._valuepair == "#battemp":
             val = round(data.get("values").get(self._valuepair), 4)
-        elif self._valuepair == "eacharge_today":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
-        elif self._valuepair == "eacharge_total":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
-        elif self._valuepair == "p1charge1":
-            val = round(data.get("values").get(self._valuepair) / 10000, 4)
-        elif self._valuepair == "eharge1_tod":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
-        elif self._valuepair == "eharge1_tot":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
-        elif self._valuepair == "pdischarge1":
-            val = round(data.get("values").get(self._valuepair) / 10000, 4)
-        elif self._valuepair == "edischarge1_tod":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
-        elif self._valuepair == "edischarge1_tot":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
         elif self._valuepair == "SOC":
             val = data.get("values").get(self._valuepair)
-        elif self._valuepair == "elocalload_tod":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
-        elif self._valuepair == "elocalload_tot":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
-        elif self._valuepair == "plocaloadr":
-            val = round(data.get("values").get(self._valuepair) / 10000, 4)
-        elif self._valuepair == "pactouserr":
-            val = round(data.get("values").get(self._valuepair) / 10000, 4)
-        elif self._valuepair == "etouser_tod":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
-        elif self._valuepair == "etouser_tot":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
-        elif self._valuepair == "pactogridr":
-            val = round(data.get("values").get(self._valuepair) / 10000, 4)
-        elif self._valuepair == "etogrid_tod":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
-        elif self._valuepair == "etogrid_tot":
-            val = round(data.get("values").get(self._valuepair) / 10, 4)
         elif self._valuepair == "datalogger_interval":
             val = self._data_handler.data_logger_update_interval
         elif self._valuepair == "inverter_workmode":

@@ -1,4 +1,4 @@
-"""Support for Adano lawnmower."""
+"""Support for Grott."""
 
 from __future__ import annotations
 

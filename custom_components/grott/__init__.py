@@ -4,7 +4,8 @@ import json
 import logging
 import time
 
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.components import mqtt
+from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
 from homeassistant.const import CONF_IP_ADDRESS, CONF_PASSWORD, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -14,9 +15,9 @@ from .const import DH, DOMAIN, INVS
 from .grott import grott
 
 PLATFORMS = [
-    Platform.SENSOR,
-    Platform.NUMBER,
     Platform.BUTTON,
+    Platform.NUMBER,
+    Platform.SENSOR,
 ]
 
 _LOGGER = logging.getLogger(__name__)
@@ -38,14 +39,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     username = entry.data.get(CONF_USERNAME)
     password = entry.data.get(CONF_PASSWORD)
 
+    await mqtt.async_wait_for_mqtt_client(hass)
+
     data_handler = grott(username, password, ip)
     await hass.async_add_executor_job(data_handler.on_load)
     # wait for first incomming mqtt to get the serianlnumber
     timeout = time.time() + 10
     while data_handler.mqttdata is None:
         if time.time() > timeout:
-            _LOGGER.warning("Timeout getting mqtt data")
-            return False
+            _LOGGER.debug("Timeout getting mqtt data")
+            raise ConfigEntryNotReady("Timeout waiting for mqtt data")
         await asyncio.sleep(0.1)
     mqtt_data = json.loads(data_handler.mqttdata)
     data_handler.inverter_serial = mqtt_data.get("device")
