@@ -1,4 +1,5 @@
 """Sensor."""
+
 # import logging
 import json
 
@@ -110,7 +111,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "pv1watt",  # Valuepair
                 "mdi:solar-power",  # icon
                 "growatt_string1_watt",  # uniqueid and transkey
-                None,
+                SensorStateClass.MEASUREMENT,
             )
             for coordinator in grott_coordinators(hass, entry)
         ]
@@ -155,7 +156,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "pv2watt",  # Valuepair
                 "mdi:solar-power",  # icon
                 "growatt_string2_watt",  # uniqueid and transkey
-                None,
+                SensorStateClass.MEASUREMENT,
             )
             for coordinator in grott_coordinators(hass, entry)
         ]
@@ -200,7 +201,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "pv1watt+pv2watt",  # Valuepair
                 "mdi:solar-power",  # icon
                 "growatt_string1_2_watt",  # uniqueid and transkey
-                None,
+                SensorStateClass.MEASUREMENT,
             )
             for coordinator in grott_coordinators(hass, entry)
         ]
@@ -215,7 +216,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "pvpowerin",  # Valuepair
                 "mdi:solar-power",  # icon
                 "growatt_actual_input_power",  # uniqueid and transkey
-                None,
+                SensorStateClass.MEASUREMENT,
             )
             for coordinator in grott_coordinators(hass, entry)
         ]
@@ -230,7 +231,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "pvpowerout",  # Valuepair
                 "mdi:solar-power",  # icon
                 "growatt_actual_output_power",  # uniqueid and transkey
-                None,
+                SensorStateClass.MEASUREMENT,
             )
             for coordinator in grott_coordinators(hass, entry)
         ]
@@ -290,7 +291,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "pvgridpower",  # Valuepair
                 "",  # icon
                 "growatt_phase_power",  # uniqueid and transkey
-                None,
+                SensorStateClass.MEASUREMENT,
             )
             for coordinator in grott_coordinators(hass, entry)
         ]
@@ -501,7 +502,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "p1charge1",  # Valuepair
                 "mdi:battery-arrow-up",  # icon
                 "growatt_battery_charge",  # uniqueid and transkey
-                None,
+                SensorStateClass.MEASUREMENT,
             )
             for coordinator in grott_coordinators(hass, entry)
         ]
@@ -546,7 +547,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "pdischarge1",  # Valuepair
                 "mdi:battery-arrow-down-outline",  # icon
                 "growatt_battery_discharge",  # uniqueid and transkey
-                None,
+                SensorStateClass.MEASUREMENT,
             )
             for coordinator in grott_coordinators(hass, entry)
         ]
@@ -636,7 +637,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "plocaloadr",  # Valuepair
                 "mdi:power-plug",  # icon
                 "growatt_local_load",  # uniqueid and transkey
-                None,
+                SensorStateClass.MEASUREMENT,
             )
             for coordinator in grott_coordinators(hass, entry)
         ]
@@ -652,7 +653,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "pactouserr",  # Valuepair
                 "mdi:transmission-tower-export",  # icon
                 "growatt_import_from_grid",  # uniqueid and transkey
-                None,
+                SensorStateClass.MEASUREMENT,
             )
             for coordinator in grott_coordinators(hass, entry)
         ]
@@ -698,7 +699,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_devices):
                 "pactogridr",  # Valuepair
                 "mdi:transmission-tower-import",  # icon
                 "growatt_export_to_grid",  # uniqueid and transkey
-                None,
+                SensorStateClass.MEASUREMENT,
             )
             for coordinator in grott_coordinators(hass, entry)
         ]
