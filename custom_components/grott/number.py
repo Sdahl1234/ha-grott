@@ -80,7 +80,7 @@ class GrottNumber(GrottEntity, NumberEntity):
         self._attr_has_entity_name = True
         self.key = translationkey
         self._attr_unique_id = self.key
-        self._sn = self.coordinator._devicesn
+        self._sn = self.coordinator.devicesn
         self.icon = ""
 
     async def async_set_native_value(self, value: float) -> None:
@@ -118,3 +118,4 @@ class GrottNumber(GrottEntity, NumberEntity):
             return self._data_handler.datalogger_update_interval
         if self.key == "grott_iui":
             return self._data_handler.inverter_update_interval
+        return any

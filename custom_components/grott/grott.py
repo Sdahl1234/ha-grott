@@ -1,4 +1,5 @@
 """GrottPy."""
+
 import logging
 from threading import Timer
 import time
@@ -16,7 +17,7 @@ class grott:
     def __init__(self, useername, password, ip) -> None:
         """Init function."""
 
-        self._dataupdated = None
+        self.dataupdated = None
         self.inverter_serial: str = None
         self.datalogger_serial: str = None
         self.ip = ip
@@ -45,8 +46,8 @@ class grott:
             response = requests.put(url, timeout=60)
             if response.status_code == 200:
                 return True
-            return False
-        except Exception as error:  # pylint: disable=broad-except
+            return False  # noqa: TRY300
+        except Exception as error:  # noqa: BLE001
             _LOGGER.debug(error)
             return False
 
@@ -58,8 +59,8 @@ class grott:
             response = requests.put(url, timeout=60)
             if response.status_code == 200:
                 return True
-            return False
-        except Exception as error:  # pylint: disable=broad-except
+            return False  # noqa: TRY300
+        except Exception as error:  # noqa: BLE001
             _LOGGER.debug(error)
             return False
 
@@ -71,11 +72,11 @@ class grott:
             response = requests.get(url, timeout=60)
             if response.status_code == 200:
                 response_data = response.json()
-                if self._dataupdated is not None:
-                    self._dataupdated()
+                if self.dataupdated is not None:
+                    self.dataupdated()
                 return response_data.get("value")
-            return None
-        except Exception as error:  # pylint: disable=broad-except
+            return None  # noqa: TRY300
+        except Exception as error:  # noqa: BLE001
             _LOGGER.debug(error)
             return None
 
@@ -87,11 +88,11 @@ class grott:
             response = requests.get(url, timeout=60)
             if response.status_code == 200:
                 response_data = response.json()
-                if self._dataupdated is not None:
-                    self._dataupdated()
+                if self.dataupdated is not None:
+                    self.dataupdated()
                 return response_data.get("value")
-            return None
-        except Exception as error:  # pylint: disable=broad-except
+            return None  # noqa: TRY300
+        except Exception as error:  # noqa: BLE001
             _LOGGER.debug(error)
             return None
 
@@ -155,7 +156,7 @@ class grott:
             )
             _LOGGER.debug("MQTT starting loop")
             self.mqtt_client.loop_start()
-        except Exception as error:  # pylint: disable=broad-except
+        except Exception as error:  # noqa: BLE001
             _LOGGER.warning("MQTT connect error: " + str(error))  # noqa: G003
 
     def on_mqtt_disconnect(self, client, userdata, rc):
@@ -171,15 +172,15 @@ class grott:
         self.mqtt_client.subscribe("energy/grott/#", qos=0)
         _LOGGER.debug("MQTT subscribe ok")
 
-    def on_mqtt_message(self, client, userdata, message):  # noqa: C901
+    def on_mqtt_message(self, client, userdata, message):
         """On mqtt message."""
         _LOGGER.debug("MQTT message: " + message.topic + " " + message.payload.decode())  # noqa: G003
         try:
             self.mqttdata = message.payload.decode()
-            if self._dataupdated is not None:
-                self._dataupdated()
+            if self.dataupdated is not None:
+                self.dataupdated()
 
-        except Exception as error:  # pylint: disable=broad-except
+        except Exception as error:  # noqa: BLE001
             _LOGGER.debug("MQTT message error: " + str(error))  # noqa: G003
             _LOGGER.debug("MQTT message: " + message.payload.decode())  # noqa: G003
 

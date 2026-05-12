@@ -47,7 +47,7 @@ class GrottButton(GrottEntity, ButtonEntity):
         self._attr_has_entity_name = True
         self.key = translationkey
         self._attr_unique_id = self.key
-        self._sn = self.coordinator._devicesn
+        self._sn = self.coordinator.devicesn
 
     @property
     def name(self):

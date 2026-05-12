@@ -1,4 +1,5 @@
 """Grott integration."""
+
 import asyncio
 import json
 import logging
@@ -101,8 +102,8 @@ class GrottDataCoordinator(DataUpdateCoordinator):  # noqa: D101
         )
         self.always_update = True
         self.data_handler = data_handler
-        self._devicesn = devicesn
-        self.data_handler._dataupdated = self.dataupdated
+        self.devicesn = devicesn
+        self.data_handler.dataupdated = self.dataupdated
 
     def dataupdated(self):
         """Func Callback when data is updated."""
@@ -112,7 +113,7 @@ class GrottDataCoordinator(DataUpdateCoordinator):  # noqa: D101
     @property
     def dsn(self):
         """DeviceSerialNumber."""
-        return self._devicesn
+        return self.devicesn
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -123,22 +124,22 @@ class GrottDataCoordinator(DataUpdateCoordinator):  # noqa: D101
             },
             model="SPH-3600",
             manufacturer="Growatt",
-            serial_number=self._devicesn,
+            serial_number=self.devicesn,
             name="Growatt",
         )
 
     @property
     def unique_id(self) -> str:
         """Return the system descriptor."""
-        return f"{DOMAIN}-{self._devicesn}"
+        return f"{DOMAIN}-{self.devicesn}"
 
     def update_device(self):
         """Update device."""
-        self.data_handler.update_devices(self._devicesn)
+        self.data_handler.update_devices(self.devicesn)
 
     async def _async_update_data(self):
         try:
             await self.hass.async_add_executor_job(self.data_handler.update)
-            return self.data_handler
-        except Exception as ex:  # pylint: disable=broad-except
+            return self.data_handler  # noqa: TRY300
+        except Exception as ex:  # noqa: BLE001
             _LOGGER.debug(f"update failed: {ex}")  # noqa: G004

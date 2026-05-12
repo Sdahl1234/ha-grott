@@ -19,4 +19,4 @@ class GrottEntity(CoordinatorEntity[GrottDataCoordinator]):
         """Init."""
         super().__init__(coordinator)
         self._attr_device_info = coordinator.device_info
-        self._attr_unique_id = f"{self.__class__._attr_unique_id}"
+        self._attr_unique_id = f"{self.__class__._attr_unique_id}"  # noqa: SLF001
