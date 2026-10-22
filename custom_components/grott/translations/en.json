@@ -1,16 +1,39 @@
 {
   "config": {
       "abort": {
-          "already_configured": "Account is already configured"
+          "already_configured": "Account is already configured",
+          "reconfigure_successful": "Re-configuration was successful"
       },
       "error": {
-          "connection_error": "Failed to connect"
+          "connection_error": "Failed to connect",
+          "missing_ip": "The IP address is required",
+          "missing_username": "The username is required",
+          "missing_password": "The password is required"
       },
       "step": {
           "user": {
               "data": {
                   "ip_address": "MQTT IP",
                   "username": "MQTT Username",
+                  "password": "MQTT Password"
+              }
+          },
+          "reconfigure": {
+              "data": {
+                  "ip_address": "MQTT IP",
+                  "username": "MQTT Username",
+                  "password": "MQTT Password"
+              },
+              "data_description": {
+                  "password": "Leave empty to keep the current password"
+              }
+          }
+      }
+  },
+  "options": {
+      "step": {
+          "init": {
+              "data": {
                   "password": "MQTT Password"
               }
           }

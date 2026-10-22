@@ -38,12 +38,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up Groot."""
     ip = entry.data.get(CONF_IP_ADDRESS)
     username = entry.data.get(CONF_USERNAME)
-    password = entry.data.get(CONF_PASSWORD)
+    password = entry.options.get(CONF_PASSWORD, entry.data.get(CONF_PASSWORD))
 
     await mqtt.async_wait_for_mqtt_client(hass)
 
     data_handler = grott(username, password, ip)
     await hass.async_add_executor_job(data_handler.on_load)
+
+    async def _async_stop_handler() -> None:
+        await hass.async_add_executor_job(data_handler.on_unload)
+
+    entry.async_on_unload(_async_stop_handler)
     # wait for first incomming mqtt to get the serianlnumber
     timeout = time.time() + 10
     while data_handler.mqttdata is None:
@@ -58,7 +63,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {DH: data_handler}
 
     inverters = [mqtt_data.get("device")]
-    inv = [GrottDataCoordinator(hass, data_handler, devicesn) for devicesn in inverters]
+    inv = [
+        GrottDataCoordinator(hass, entry, data_handler, devicesn)
+        for devicesn in inverters
+    ]
 
     await asyncio.gather(
         *[coordinator.async_config_entry_first_refresh() for coordinator in inv]
@@ -90,11 +98,18 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 class GrottDataCoordinator(DataUpdateCoordinator):  # noqa: D101
     config_entry: ConfigEntry
 
-    def __init__(self, hass: HomeAssistant, data_handler: grott, devicesn) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        config_entry: ConfigEntry,
+        data_handler: grott,
+        devicesn,
+    ) -> None:
         """Initialize my coordinator."""
         super().__init__(
             hass,
             _LOGGER,
+            config_entry=config_entry,
             # Name of the data. For logging purposes.
             name=DOMAIN,
             # Polling interval. Will only be polled if there are subscribers.

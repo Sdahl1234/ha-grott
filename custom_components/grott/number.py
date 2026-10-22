@@ -116,4 +116,4 @@ class GrottNumber(GrottEntity, NumberEntity):
             return self._data_handler.datalogger_update_interval
         if self.key == "grott_iui":
             return self._data_handler.inverter_update_interval
-        return any
+        return None

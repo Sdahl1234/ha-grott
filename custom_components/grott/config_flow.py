@@ -1,5 +1,6 @@
 """Adds config flow for grott integration."""
-import voluptuous as vol
+
+import probatio
 
 from homeassistant import config_entries, core, exceptions
 from homeassistant.const import CONF_IP_ADDRESS, CONF_PASSWORD, CONF_USERNAME
@@ -9,11 +10,11 @@ from .const import DOMAIN
 
 # _LOGGER = logging.getLogger(__name__)
 
-DATA_SCHEMA = vol.Schema(
+DATA_SCHEMA = probatio.Schema(
     {
-        vol.Required(CONF_IP_ADDRESS): str,
-        vol.Required(CONF_USERNAME): str,
-        vol.Required(CONF_PASSWORD): str,
+        probatio.Required(CONF_IP_ADDRESS): str,
+        probatio.Required(CONF_USERNAME): str,
+        probatio.Required(CONF_PASSWORD): str,
     }
 )
 
@@ -46,7 +47,14 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for grott integration."""
 
     VERSION = 1
-    CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> OptionsFlowHandler:
+        """Create the options flow."""
+        return OptionsFlowHandler()
 
     async def async_step_user(self, user_input=None):
         """Handle the initial step."""
@@ -87,6 +95,57 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
+    async def async_step_reconfigure(self, user_input=None):
+        """Handle reconfiguration of an existing entry."""
+        entry = self._get_reconfigure_entry()
+        current_password = entry.options.get(
+            CONF_PASSWORD, entry.data.get(CONF_PASSWORD)
+        )
+        errors = {}
+
+        if user_input is not None:
+            ip = user_input[CONF_IP_ADDRESS].strip()
+            username = user_input[CONF_USERNAME].strip()
+            password = user_input.get(CONF_PASSWORD, "").replace(" ", "")
+            if not password:
+                password = current_password
+
+            if not ip:
+                errors["base"] = "missing_ip"
+            elif not username:
+                errors["base"] = "missing_username"
+            elif not password:
+                errors["base"] = "missing_password"
+            else:
+                return self.async_update_reload_and_abort(
+                    entry,
+                    data_updates={
+                        CONF_IP_ADDRESS: ip,
+                        CONF_USERNAME: username,
+                        CONF_PASSWORD: password,
+                    },
+                    options={},
+                )
+
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=self.add_suggested_values_to_schema(
+                probatio.Schema(
+                    {
+                        probatio.Required(CONF_IP_ADDRESS): str,
+                        probatio.Required(CONF_USERNAME): str,
+                        probatio.Optional(CONF_PASSWORD): str,
+                    }
+                ),
+                user_input
+                or {
+                    CONF_IP_ADDRESS: entry.data.get(CONF_IP_ADDRESS),
+                    CONF_USERNAME: entry.data.get(CONF_USERNAME),
+                },
+            ),
+            errors=errors,
+        )
+
     # async def async_step_select_mower(self):
 
 
@@ -95,19 +154,20 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_init(self, user_input=None):
         """Step init."""
+        if user_input is not None:
+            password = user_input.get(CONF_PASSWORD, "").replace(" ", "")
+            if not password:
+                return self.async_create_entry(data={})
+            return self.async_create_entry(data={CONF_PASSWORD: password})
+
         return self.async_show_form(
             step_id="init",
-            data_schema=vol.Schema(
+            data_schema=probatio.Schema(
                 {
-                    vol.Optional(CONF_PASSWORD): str,
+                    probatio.Optional(CONF_PASSWORD): str,
                 }
             ),
         )
-
-
-@callback
-def async_get_options_flow(config_entry):  # noqa: D103
-    return OptionsFlowHandler(config_entry)
 
 
 class CannotConnect(exceptions.HomeAssistantError):

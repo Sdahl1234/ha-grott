@@ -1,11 +1,11 @@
 """GrottPy."""
 
 import logging
-from threading import Timer
-import time
+from threading import Event, Timer
 import uuid
 
 import paho.mqtt.client as mqtt
+from paho.mqtt.enums import CallbackAPIVersion
 import requests
 
 _LOGGER = logging.getLogger(__name__)
@@ -28,6 +28,7 @@ class grott:
         self.mqtt_client = None
         self.inverter_timer: Timer = None
         self.datalogger_timer: Timer = None
+        self._stop_event = Event()
         self.datalogger_update_interval: int = 600
         self.inverter_update_interval: int = 600
         self.data_logger_update_interval = None
@@ -41,7 +42,7 @@ class grott:
     def set_inverter(self, register: int, value: str, inverter: str) -> str:
         """Set inverter data."""
         try:
-            url = f"http://192.168.86.57:5782/inverter?command=register&register={register}&inverter={inverter}&value={value}"
+            url = f"http://{self.ip}:5782/inverter?command=register&register={register}&inverter={inverter}&value={value}"
             _LOGGER.debug(url)
             response = requests.put(url, timeout=60)
             if response.status_code == 200:
@@ -54,7 +55,7 @@ class grott:
     def set_datalogger(self, register: int, value: str, datalogger: str) -> str:
         """Set data_logger data."""
         try:
-            url = f"http://192.168.86.57:5782/datalogger?command=register&register={register}&datalogger={datalogger}&value={value}"
+            url = f"http://{self.ip}:5782/datalogger?command=register&register={register}&datalogger={datalogger}&value={value}"
             _LOGGER.debug(url)
             response = requests.put(url, timeout=60)
             if response.status_code == 200:
@@ -67,7 +68,7 @@ class grott:
     def get_inverter(self, register: int, inverter: str) -> str:
         """Get data_logger data."""
         try:
-            url = f"http://192.168.86.57:5782/inverter?command=register&register={register}&inverter={inverter}"
+            url = f"http://{self.ip}:5782/inverter?command=register&register={register}&inverter={inverter}"
             _LOGGER.debug(url)
             response = requests.get(url, timeout=60)
             if response.status_code == 200:
@@ -83,7 +84,7 @@ class grott:
     def get_datalogger(self, register: int, datalogger: str) -> str:
         """Get data_logger data."""
         try:
-            url = f"http://192.168.86.57:5782/datalogger?command=register&register={register}&datalogger={datalogger}"
+            url = f"http://{self.ip}:5782/datalogger?command=register&register={register}&datalogger={datalogger}"
             _LOGGER.debug(url)
             response = requests.get(url, timeout=60)
             if response.status_code == 200:
@@ -101,15 +102,15 @@ class grott:
 
     def GetDataloggerValues(self):
         """Update datalooger update interval."""
-        while self.datalogger_timer:
+        while not self._stop_event.is_set():
             val = self.get_datalogger(4, self.datalogger_serial)
             if val is not None:
                 self.data_logger_update_interval = float(val) * 60
-            time.sleep(self.datalogger_update_interval)
+            self._stop_event.wait(self.datalogger_update_interval)
 
     def GetInverterValues(self):
         """Update datalooger update interval."""
-        while self.inverter_timer:
+        while not self._stop_event.is_set():
             val = self.get_inverter(1044, self.inverter_serial)
             if val is not None:
                 if val == 0:
@@ -121,7 +122,7 @@ class grott:
             val = self.get_inverter(1071, self.inverter_serial)
             if val is not None and val < 101:
                 self.discharge_stop = val
-            time.sleep(self.inverter_update_interval)
+            self._stop_event.wait(self.inverter_update_interval)
 
     def on_load(self):
         """Init the mqtt client."""
@@ -131,23 +132,37 @@ class grott:
             )
             return
 
+        self._stop_event.clear()
         self.connect_mqtt()
         self.datalogger_timer = Timer(5, self.GetDataloggerValues)
+        self.datalogger_timer.daemon = True
         self.datalogger_timer.start()
         self.inverter_timer = Timer(10, self.GetInverterValues)
+        self.inverter_timer.daemon = True
         self.inverter_timer.start()
+
+    def on_unload(self):
+        """Stop the polling threads and disconnect the mqtt client."""
+        self._stop_event.set()
+        for timer in (self.datalogger_timer, self.inverter_timer):
+            if timer:
+                timer.cancel()
+        if self.mqtt_client:
+            self.mqtt_client.disconnect()
+            self.mqtt_client.loop_stop()
+            self.mqtt_client = None
 
     def connect_mqtt(self):
         """Connect mgtt."""
         if self.mqtt_client:
             self.mqtt_client.disconnect()
 
-        self.mqtt_client = mqtt.Client(client_id=self.client_id)
+        self.mqtt_client = mqtt.Client(
+            CallbackAPIVersion.VERSION2, client_id=self.client_id
+        )
         self.mqtt_client.on_connect = self.on_mqtt_connect
         self.mqtt_client.on_message = self.on_mqtt_message
         self.mqtt_client.on_disconnect = self.on_mqtt_disconnect
-        self.mqtt_client.on_error = self.on_mqtt_error
-        self.mqtt_client.on_close = self.on_mqtt_close
         self.mqtt_client.username_pw_set(self.username, self.password)
         try:
             self.mqtt_client.connect(
@@ -159,11 +174,13 @@ class grott:
         except Exception as error:  # noqa: BLE001
             _LOGGER.warning("MQTT connect error: " + str(error))  # noqa: G003
 
-    def on_mqtt_disconnect(self, client, userdata, rc):
+    def on_mqtt_disconnect(
+        self, client, userdata, disconnect_flags, reason_code, properties
+    ):
         """On mqtt disconnect."""
         _LOGGER.debug("MQTT disconnected")
 
-    def on_mqtt_connect(self, client, userdata, flags, rc):
+    def on_mqtt_connect(self, client, userdata, flags, reason_code, properties):
         """On mqtt connect."""
         _LOGGER.debug("MQTT connected event")
         _LOGGER.debug(
@@ -183,11 +200,3 @@ class grott:
         except Exception as error:  # noqa: BLE001
             _LOGGER.debug("MQTT message error: " + str(error))  # noqa: G003
             _LOGGER.debug("MQTT message: " + message.payload.decode())  # noqa: G003
-
-    def on_mqtt_error(self, client, userdata, error):
-        """On mqtt error."""
-        _LOGGER.debug("MQTT error: " + str(error))  # noqa: G003
-
-    def on_mqtt_close(self, client, userdata, rc):
-        """On mqtt close."""
-        _LOGGER.debug("MQTT closed")

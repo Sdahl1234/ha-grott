@@ -823,10 +823,11 @@ class GrottSensor(GrottEntity, SensorEntity):
         return self._name
 
     @property
-    def state(self):  # noqa: C901
+    def native_value(self):  # noqa: C901
         """State."""
         # Hent data fra data_handler her
         data = json.loads(self._data_handler.mqttdata)
+        val = None
         if self._valuepair == "device":
             val = data.get(self._valuepair)
         elif self.key == "growatt_time":
